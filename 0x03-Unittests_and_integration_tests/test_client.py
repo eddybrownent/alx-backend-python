@@ -3,7 +3,7 @@
 Tests that GithubOrgClient.org returns the correct value
 """
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, PropertyMock
 from parameterized import parameterized
 from client import GithubOrgClient
 
@@ -33,3 +33,22 @@ class TestGithubOrgClient(unittest.TestCase):
                 GithubOrgClient.ORG_URL.format(org=org_name))
 
         self.assertEqual(result, {"name": "mocked_org"})
+
+    def test_public_repos_url(self):
+        """
+        Test GithubOrgClient._public_repos_url returns the correct value
+
+        Args:
+            mock_org: Mock object for the org method
+        """
+        with patch(
+                'client.GithubOrgClient.org',
+                new_callable=PropertyMock) as mock_org:
+            mock_org.return_value = {
+                    'repos_url': "https://api.github.com/users/google/repos"}
+            github_org_client = GithubOrgClient("google")
+
+            result = github_org_client._public_repos_url
+
+            expected_result = "https://api.github.com/users/google/repos"
+            self.assertEqual(result, expected_result)
