@@ -52,3 +52,32 @@ class TestGithubOrgClient(unittest.TestCase):
 
             expected_result = "https://api.github.com/users/google/repos"
             self.assertEqual(result, expected_result)
+
+    @patch('client.GithubOrgClient._public_repos_url',
+           new_callable=PropertyMock)
+    @patch('client.get_json')
+    def test_public_repos(self,
+                          mock_get_json: MagicMock,
+                          mock_pub_url: PropertyMock):
+        """
+        Test public_repos method
+        """
+        mock_get_json.return_value = [
+                {"name": "projectA", "license": {"key": "apache"}},
+                {"name": "projectB", "license": {"key": "mit"}},
+                {"name": "projectC", "license": {"key": "gpl"}},
+                ]
+
+        mock_pub_url.return_value = "https://api.github.com/orgs/google/repos"
+
+        github_org_client = GithubOrgClient("google")
+
+        repos = github_org_client.public_repos(license="mit")
+
+        expected_repos = ["projectB"]
+        self.assertEqual(repos, expected_repos)
+
+        mock_get_json.assert_called_once_with(
+                "https://api.github.com/orgs/google/repos")
+
+        mock_pub_url.assert_called_once()
