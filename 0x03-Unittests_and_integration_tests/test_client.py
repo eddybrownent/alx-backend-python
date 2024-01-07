@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import patch, MagicMock, PropertyMock
 from parameterized import parameterized
 from client import GithubOrgClient
+from typing import Dict
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -81,3 +82,18 @@ class TestGithubOrgClient(unittest.TestCase):
                 "https://api.github.com/orgs/google/repos")
 
         mock_pub_url.assert_called_once()
+
+    @parameterized.expand([
+        ({"license": {"key": "owned_license"}}, "owned_license", True),
+        ({"license": {"key": "new_license"}}, "owned_license", False),
+        ])
+    def test_has_license(self, repo: Dict, license_key: str,
+                         expected_result: bool):
+        """
+        Tests the has_license method
+        """
+        github_org_client = GithubOrgClient("testorg")
+
+        result = github_org_client.has_license(repo, license_key)
+
+        self.assertEqual(result, expected_result)
